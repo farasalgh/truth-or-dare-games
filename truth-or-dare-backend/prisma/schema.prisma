@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  email       String    @unique
+  passwordHash String
+  createdAt   DateTime  @default(now())
+  rooms       Room[]    @relation("Host")
+  roomMembers RoomMember[]
+  chatMessages ChatMessage[]
+}
+
+model Question {
+  id      Int    @id @default(autoincrement())
+  type    String // "truth" atau "dare"
+  content String
+}
+
+model Room {
+  id         Int         @id @default(autoincrement())
+  code       String      @unique
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  hostUser   User        @relation("Host", fields: [hostUserId], references: [id])
+  hostUserId Int
+  members    RoomMember[]
+  chatMessages ChatMessage[]
+}
+
+model RoomMember {
+  id        Int      @id @default(autoincrement())
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  joinedAt  DateTime @default(now())
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  message   String
+  createdAt DateTime @default(now())
+}
